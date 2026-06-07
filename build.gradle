@@ -1,0 +1,74 @@
+plugins {
+    id 'groovy'
+    id 'java'
+    id 'org.springframework.boot' version '4.0.6'
+    id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'org.example'
+version = '0.0.1-SNAPSHOT'
+description = 'coummunity-crud'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
+    // 엔티티를 만들고 DB 테이블과 연결하기 위해 의존성을 추가했습니다.
+    // @Entity, @Repository, 영속성 컨텍스트, 트랜잭션 등을 사용할 수 있게 해줍니다.
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // Spring Boot를 MySQL DB와 연결하기 위해 필요합니다.
+    // 실제로 MySQL 서버와 통신하는 연결 도구 입니다.
+
+    // application.properties나 application.yml에 DB 정보를 적으면
+    // Spring Boot가 MySQL에 접속할 수 있습니다.
+
+    // 'com.h2database:h2' 와 비교하면
+    // MySQL이 실제로 더 많이 쓰는 DB이고,
+    // 이미 내 DDL문을 MySQL로 짰으니까 사용했습니다.
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
+    // QueryDSL을 사용하기 위한 의존성을 추가 했습니다.
+    // JPA 엔티티를 기반으로 타입 안전한 쿼리를 작성할 수 있게 해준다.
+    // 타입이 안정적이어서 검색 조건이 많고 복잡한 조건을 java 코드로 조립할 수 있습니다.
+    // 문자열로 직접 작성하는 것보다 오타를 줄일 수 있습니다.
+    implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
+
+    // QueryDSL이 Entity를 읽고 Q클래스를 만들기 위한 것입니다.
+    // QueryDSL 코드에서 엔티티 필드를 안전하게 쓸 수 있습니다.
+    annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
+
+    // QueryDSL이 Jakarta Persistence 어노테이션을 읽을 수 있게 해준다.
+    annotationProcessor 'jakarta.persistence:jakarta.persistence-api'
+    // QueryDSL이 Jakarta Annotation을 사용할 수 있게 해준다.
+    annotationProcessor 'jakarta.annotation:jakarta.annotation-api'
+
+    // ObjectMapper, TypeReference를 사용하기 위해 필요하다.
+    // JWT의 header/payload를 JSON으로 만들고 다시 읽을 때 사용한다.
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    implementation 'org.apache.groovy:groovy'
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    testCompileOnly 'org.projectlombok:lombok'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testAnnotationProcessor 'org.projectlombok:lombok'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
