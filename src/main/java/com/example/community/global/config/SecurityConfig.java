@@ -30,7 +30,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
 
                 // 기본 로그인 폼을 사용하지 않는다.
-                // 우리는 /api/auth/login에서 JSON으로 로그인하고 JWT를 발급할 것이기 때문이다.
+                // /api/auth/login에서 JSON으로 로그인하고 JWT를 발급함.
                 .formLogin(AbstractHttpConfigurer::disable)
 
                 // 브라우저 기본 팝업 로그인 방식을 사용하지 않는다.

@@ -12,7 +12,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleIllegalArgumentException(IllegalArgumentException e) {
 
-        // Service에서 throw new IllegalArgumentException(...)이 발생하면
+        // Service에서 throw new IllegalArgumentException 이 발생하면
         // 여기서 공통 실패 응답 형태로 바꿔준다.
         return ApiResponse.fail(e.getMessage());
     }
