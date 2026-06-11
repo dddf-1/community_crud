@@ -1,5 +1,6 @@
 package com.example.community.comment.domain;
 
+import com.example.community.global.BaseEntity;
 import com.example.community.member.domain.Member;
 import com.example.community.post.domain.Post;
 import jakarta.persistence.Column;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "comments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment {
+public class Comment extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,7 +42,7 @@ public class Comment {
     // @ManyToOne -> 여러 개가 하나를 가진다(Comment -> Member N:1)
     private Member member;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false, length = 500)
     private String content;
 
     @Column(name = "created_at", nullable = false)
@@ -51,7 +52,6 @@ public class Comment {
         this.post = post;
         this.member = member;
         this.content = content;
-        this.createdAt = LocalDateTime.now();
     }
 
     public void update(String content) {

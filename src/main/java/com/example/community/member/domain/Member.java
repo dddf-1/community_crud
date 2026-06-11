@@ -1,5 +1,6 @@
 package com.example.community.member.domain;
 
+import com.example.community.global.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -22,7 +23,7 @@ import lombok.NoArgsConstructor;
 // --> 기본 생성자를 아무 곳에서 못쓰게 막아두겠다는 뜻.
 // 즉, JPA가 Entity를 만들 수 있도록 기본 생성자는 만들어 주되,
 // 외부에서 객체를 만들지 못하게 막는 목적
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,8 +46,8 @@ public class Member {
     @Column(nullable = false, unique = true, length = 20)
     private String nickname;
 
-    @Column(name = "profile_image", length = 500)
-    private String profileImage;
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
@@ -65,11 +66,11 @@ public class Member {
         this.role = role;
     }
 
-    public Member(String email, String password, String nickname, String profileImage, Role role) {
+    public Member(String email, String password, String nickname, String profileImageUrl, Role role) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
-        this.profileImage = profileImage;
+        this.profileImageUrl = profileImageUrl;
         this.role = role;
     }
     public Long getId() {
