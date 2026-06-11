@@ -6,12 +6,18 @@ import com.example.community.post.dto.PostCreateRequest;
 import com.example.community.post.dto.PostResponse;
 import com.example.community.post.dto.PostUpdateRequest;
 import com.example.community.post.service.PostService;
+import com.example.community.post.dto.PostListResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.net.URI;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,8 +27,7 @@ public class PostController {
     private final PostService postService;
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<PostResponse> createPost(
+    public ResponseEntity<ApiResponse<PostResponse>> createPost(
             @RequestBody PostCreateRequest request,
 
             // JwtAuthenticationFilter가 SecurityContextHolder에 저장한 로그인 사용자 정보가 여기로 들어온다.
@@ -33,31 +38,34 @@ public class PostController {
                 loginMember.getMemberId(),
                 request
         );
+        // 게시글 URI 생성
+        URI location = URI.create("/api/posts/" + response.getId());
+        return ResponseEntity.created(location)
+                .body(ApiResponse.success("게시글 생성 성공", response));
 
-        return ApiResponse.success("게시글 생성 성공", response);
+        //return ApiResponse.success("게시글 생성 성공", response);
     }
 
     @GetMapping
-    public ApiResponse<List<PostResponse>> getPosts() {
+    public ResponseEntity<ApiResponse<Slice<PostListResponse>>> getPosts(Pageable pageable) {
 
-        // 게시글 목록 조회는 로그인하지 않아도 가능하다.
-        // 그래서 이 메서드에는 @AuthenticationPrincipal이 필요 없다.
-        List<PostResponse> response = postService.getPosts();
+        // dto projection을 이용하는게 fetch join 보다 최적화에 좋을 것 같아서 사용했음
+        Slice<PostListResponse> response = postService.getPosts(pageable);
 
-        return ApiResponse.success("게시글 목록 조회 성공", response);
+        return ResponseEntity.ok(ApiResponse.success("게시글 목록 조회 성공", response));
     }
 
     @GetMapping("/{postId}")
-    public ApiResponse<PostResponse> getPost(@PathVariable Long postId) {
+    public ResponseEntity<ApiResponse<PostResponse>> getPost(@PathVariable Long postId) {
 
         // 게시글 단건 조회도 로그인하지 않아도 가능하다.
         PostResponse response = postService.getPost(postId);
 
-        return ApiResponse.success("게시글 조회 성공", response);
+        return ResponseEntity.ok(ApiResponse.success("게시글 조회 성공", response));
     }
 
     @PatchMapping("/{postId}")
-    public ApiResponse<PostResponse> updatePost(
+    public ResponseEntity<ApiResponse<PostResponse>> updatePost(
             @PathVariable Long postId,
             @RequestBody PostUpdateRequest request,
 
@@ -71,12 +79,11 @@ public class PostController {
                 request
         );
 
-        return ApiResponse.success("게시글 수정 성공", response);
+        return ResponseEntity.ok(ApiResponse.success("게시글 수정 성공", response));
     }
 
     @DeleteMapping("/{postId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletePost(
+    public ResponseEntity<Void> deletePost(
             @PathVariable Long postId,
 
             // 삭제도 작성자 본인만 가능해야 하므로 로그인 사용자 정보가 필요하다.
@@ -86,5 +93,7 @@ public class PostController {
                 postId,
                 loginMember.getMemberId()
         );
+
+        return ResponseEntity.noContent().build();
     }
 }
