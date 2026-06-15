@@ -12,6 +12,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
+
 
 @Configuration
 @RequiredArgsConstructor
@@ -24,6 +30,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // JWT 방식에서는 서버 세션을 사용하지 않는다.
                 // 그래서 CSRF 공격 대상이 되는 세션 기반 인증을 끈다.
@@ -45,15 +52,16 @@ public class SecurityConfig {
                 // 어떤 API는 누구나 접근 가능하고,
                 // 어떤 API는 로그인한 사용자만 접근 가능하게 나눈다.
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 회원가입과 로그인은 로그인 전에도 가능해야 하므로 허용
+                        // 로그인 전에도 가능한 API만 허용
                         .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
 
-                        // 게시글 목록 조회와 단건 조회는 비로그인 사용자도 볼 수 있게 허용
-                        // GET 요청만 허용해야 게시글 작성 POST까지 열리지 않는다.
+                        // 게시글 조회는 공개
                         .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
 
-                        // 그 외 요청 JWT 인증
+                        // check는 permitAll로 열고, 컨트롤러 내부에서 토큰 유효성 검사
+                        .requestMatchers("/api/auth/check").permitAll()
                         .anyRequest().authenticated()
                 )
 
@@ -72,5 +80,28 @@ public class SecurityConfig {
         // 비밀번호를 평문으로 저장하지 않고 BCrypt 해시로 저장하기 위해 사용
         // 회원가입 때 encode(), 로그인 때 matches()를 사용
         return new BCryptPasswordEncoder();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(
+                "http://54.180.147.149:3000",
+                "http://localhost:8080",  // 로컬 개발용 프론트
+                "http://127.0.0.1:8080"  // 로컬 개발용 프론트 (IP)
+        ));
+
+        configuration.setAllowedMethods(List.of(
+                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
+        ));
+
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
     }
 }

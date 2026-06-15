@@ -1,14 +1,21 @@
 package com.example.community.global;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+
 import java.time.LocalDateTime;
 
-
+@Getter
 @MappedSuperclass
 public abstract class BaseEntity{
 
         @Column(name = "created_at", nullable = false, updatable = false)
         private LocalDateTime createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
+    }
 
         @Column(name = "updated_at", nullable = false)
         private LocalDateTime updatedAt;
