@@ -49,7 +49,7 @@ public class PostController {
     @GetMapping
     public ResponseEntity<ApiResponse<Slice<PostListResponse>>> getPosts(Pageable pageable) {
 
-        // dto projection을 이용하는게 fetch join 보다 최적화에 좋을 것 같아서 사용했음
+        
         Slice<PostListResponse> response = postService.getPosts(pageable);
 
         return ResponseEntity.ok(ApiResponse.success("게시글 목록 조회 성공", response));

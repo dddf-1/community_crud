@@ -7,7 +7,9 @@ import com.example.community.auth.service.AuthService;
 import com.example.community.global.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,6 +49,11 @@ public class AuthController {
         authService.logout();
 
         return ApiResponse.success("로그아웃 성공. 클라이언트에서 토큰을 삭제하세요.", null);
+    }
+
+    @GetMapping("/check")
+    public ResponseEntity<ApiResponse<Void>> checkAuth() {
+        return ResponseEntity.ok(ApiResponse.success("인증된 사용자입니다.", null));
     }
 }
 // 인정과 관련된 것을 요청?받음.

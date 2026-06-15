@@ -27,10 +27,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String requestURI = request.getRequestURI();
-        // 회원가입과 로그인은 아직 JWT 토큰이 없는 요청
-        // 그래서 JWT 필터에서 검사하지 않고 바로 다음 필터로 넘긴다.
-        if (requestURI.equals("/api/auth/signup") || requestURI.equals("/api/auth/login")) {
+        // CORS 사전 요청은 JWT 검사하지 않고 통과
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String path = request.getRequestURI();
+        if (path.startsWith("/api/auth/signup")
+                || path.startsWith("/api/auth/login")) {
             filterChain.doFilter(request, response);
             return;
         }
