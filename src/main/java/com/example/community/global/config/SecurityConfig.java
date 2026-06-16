@@ -52,17 +52,17 @@ public class SecurityConfig {
                 // 어떤 API는 누구나 접근 가능하고,
                 // 어떤 API는 로그인한 사용자만 접근 가능하게 나눈다.
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 로그인 전에도 가능한 API만 허용
-                        .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
-
-                        // 게시글 조회는 공개
-                        .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
-
-                        // check는 permitAll로 열고, 컨트롤러 내부에서 토큰 유효성 검사
-                        .requestMatchers("/api/auth/check").permitAll()
-                        .anyRequest().authenticated()
+                                // CORS preflight 요청 허용
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                // 로그인 전에도 가능한 API만 허용
+                                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                                // 게시글 조회는 공개
+                                .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
+                                // 업로드된 이미지 조회 공개
+                                .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
+                                // 나머지는 인증 필요
+                                .anyRequest().authenticated()
                 )
 
                 // UsernamePasswordAuthenticationFilter 앞에 JWT 필터를 둔다.
@@ -97,6 +97,7 @@ public class SecurityConfig {
         ));
 
         configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
