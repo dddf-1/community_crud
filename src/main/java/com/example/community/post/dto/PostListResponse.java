@@ -9,13 +9,22 @@ public class PostListResponse {
     private final String title;
     private final int viewCount;
     private final LocalDateTime createdAt;
+    private final String attachFileUrl;
 
-    public PostListResponse(Long id, Long MemberId, String title, int viewCount, LocalDateTime createdAt) {
+    public PostListResponse(
+            Long id,
+            Long memberId,
+            String title,
+            int viewCount,
+            LocalDateTime createdAt,
+            String attachFileUrl
+    ) {
         this.id = id;
-        this.MemberId = MemberId;
+        this.MemberId = memberId;
         this.title = title;
         this.viewCount = viewCount;
         this.createdAt = createdAt;
+        this.attachFileUrl = attachFileUrl;
     }
     public Long getId() {
         return id;
@@ -31,6 +40,9 @@ public class PostListResponse {
     }
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+    public String getAttachFileUrl() {
+        return attachFileUrl;
     }
 
 }
