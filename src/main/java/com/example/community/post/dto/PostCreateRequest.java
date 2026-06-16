@@ -12,4 +12,6 @@ public class PostCreateRequest {
 
     // 게시글 생성 요청에서 받을 내용
     private String content;
+
+    private String attachFileUrl;
 }

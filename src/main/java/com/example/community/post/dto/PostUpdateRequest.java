@@ -12,4 +12,6 @@ public class PostUpdateRequest {
 
     // 수정할 게시글 내용
     private String content;
+
+    private String attachFileUrl;
 }
