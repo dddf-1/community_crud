@@ -58,7 +58,7 @@ public class PostService {
                 member,
                 request.getTitle(),
                 request.getContent(),
-                null
+                request.getAttachFileUrl()
         );
 
         // 게시글을 DB에 저장
@@ -131,7 +131,7 @@ public class PostService {
         post.update(
                 request.getTitle(),
                 request.getContent(),
-                null
+                request.getAttachFileUrl()
         );
 
         // 4. 수정된 게시글을 저장

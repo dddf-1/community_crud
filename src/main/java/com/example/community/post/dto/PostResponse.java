@@ -14,6 +14,7 @@ public class PostResponse {
     private int viewCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String attachFileUrl;
 
     public PostResponse(
             Long id,
@@ -22,8 +23,9 @@ public class PostResponse {
             String content,
             int viewCount,
             LocalDateTime createdAt,
-            LocalDateTime updatedAt
-    ) {
+            LocalDateTime updatedAt,
+            String attachFileUrl
+                        ) {
         this.id = id;
         this.memberId = memberId;
         this.title = title;
@@ -31,6 +33,7 @@ public class PostResponse {
         this.viewCount = viewCount;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.attachFileUrl = attachFileUrl;
     }
 
     public static PostResponse from(Post post) {
@@ -44,7 +47,8 @@ public class PostResponse {
                 post.getContent(),
                 post.getViewCount(),
                 post.getCreatedAt(),
-                post.getUpdatedAt()
+                post.getUpdatedAt(),
+                post.getImageUrl()
         );
     }
 
@@ -74,5 +78,9 @@ public class PostResponse {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public String getAttachFileUrl() {
+        return attachFileUrl;
     }
 }

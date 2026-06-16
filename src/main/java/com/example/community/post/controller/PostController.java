@@ -2,6 +2,7 @@ package com.example.community.post.controller;
 
 import com.example.community.auth.security.CustomUserPrincipal;
 import com.example.community.global.ApiResponse;
+import com.example.community.global.file.FileStorageService;
 import com.example.community.post.dto.PostCreateRequest;
 import com.example.community.post.dto.PostResponse;
 import com.example.community.post.dto.PostUpdateRequest;
@@ -15,9 +16,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.Map;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequiredArgsConstructor
@@ -25,6 +28,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PostController {
 
     private final PostService postService;
+    private final FileStorageService fileStorageService;
+
+    @PostMapping("/upload/attach-file")
+    public ResponseEntity<ApiResponse<Map<String, String>>> uploadAttachFile(
+            @RequestParam("postFile") MultipartFile postFile
+    ) {
+        String fileUrl = fileStorageService.save(postFile);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("게시글 이미지 업로드 성공", Map.of("fileUrl", fileUrl))
+        );
+    }
 
     @PostMapping
     public ResponseEntity<ApiResponse<PostResponse>> createPost(
