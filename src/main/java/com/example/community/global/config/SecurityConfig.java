@@ -88,8 +88,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(List.of(
                 "http://54.180.147.149", // nginx 통해 접속할 때
-                "http://54.180.147.149:3000", // 프론트 서버 직접 접속할 때
-                "http://localhost:3000" //
+                "http://54.180.147.149:3000"// 프론트 서버 직접 접속할 때//
         ));
 
         configuration.setAllowedMethods(List.of(
