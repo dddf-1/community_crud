@@ -23,7 +23,8 @@ public interface PostRepository extends JpaRepository<Post, Long> {
                 m.memberId,
                 p.title,
                 p.viewCount,
-                p.createdAt                        
+                p.createdAt,
+                p.imageUrl                        
             )
              from Post p
              join p.member m
