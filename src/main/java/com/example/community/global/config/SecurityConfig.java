@@ -87,9 +87,9 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         configuration.setAllowedOrigins(List.of(
-                "http://54.180.147.149:3000",
-                "http://localhost:8080",  // 로컬 개발용 프론트
-                "http://127.0.0.1:8080"  // 로컬 개발용 프론트 (IP)
+                "http://54.180.147.149", // nginx 통해 접속할 때
+                "http://54.180.147.149:3000", // 프론트 서버 직접 접속할 때
+                "http://localhost:3000" //
         ));
 
         configuration.setAllowedMethods(List.of(
