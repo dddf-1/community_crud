@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping({"/api/auth", "/v1/auth"})
 public class AuthController {
 
     // 인증 관련 비즈니스 로직은 Service가 담당한다.
