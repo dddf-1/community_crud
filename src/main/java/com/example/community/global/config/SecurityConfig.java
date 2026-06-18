@@ -56,7 +56,7 @@ public class SecurityConfig {
                                 // CORS preflight 요청 허용
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 // 로그인 전에도 가능한 API만 허용
-                                .requestMatchers("/api/auth/signup", "/api/auth/login").permitAll()
+                                .requestMatchers("/api/auth/signup", "/api/auth/login","/v1/auth/signup","/v1/auth/login").permitAll()
                                 // 게시글 조회는 공개
                                 .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
                                 // 업로드된 이미지 조회 공개
