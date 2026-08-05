@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 
 // 게시글 DB 접근을 담당하는 JPA Repository이다.
 // JpaRepository<Post, Long>를 상속하면 Spring Data JPA가 자동으로 구현체를 만들어준다.
@@ -32,4 +34,13 @@ public interface PostRepository extends JpaRepository<Post, Long> {
            """)
 
     Slice<PostListResponse> findPostList(Pageable pageable);
+
+    @Modifying
+    @Query("""
+    update Post p
+    set p.viewCount = p.viewCount + 1
+    where p.postId = :postId
+""")
+    void increaseViewCount(@Param("postId") Long postId);
 }
+

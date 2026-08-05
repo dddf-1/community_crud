@@ -8,7 +8,6 @@ import com.example.community.post.dto.PostListResponse;
 import com.example.community.post.dto.PostResponse;
 import com.example.community.post.dto.PostUpdateRequest;
 import com.example.community.post.repository.PostRepository;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+
 @Transactional(readOnly = true)
 // save를 직접 호출해서 사용했지만, 로직들이 트랜젝션 안에서 실행되는 것이 좋아보임.
 public class PostService {
@@ -83,20 +83,23 @@ public class PostService {
         return postRepository.findPostList(pageable);
 
     }
-     // 게시글 조회 기능
-     // @param postId 조회할 게시글 ID
-     // @return 조회된 게시글 정보를 PostResponse 형태로 반환한다.
-    public PostResponse getPost(Long postId) {
-        // 1. postId로 게시글을 조회
-        // findById는 Optional<Post>를 반환한다.
-        // 게시글이 있을 수도 있고 없을 수도 있기 때문이다.
-        Post post = postRepository.findById(postId)
-                // 2. 게시글이 없으면 예외를 발생시킨다.
-                // 없는 게시글을 조회하려고 했다는 의미이다.
-                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
-        // 3. 조회된 Post 엔티티를 응답 DTO로 변환해서 반환
-        return PostResponse.from(post);
-    }
+
+     @Transactional
+     public PostResponse getPost(Long postId) {
+
+         // 1. 게시글 존재 확인
+         postRepository.findById(postId)
+                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+         // 2. DB에서 직접 조회수 +1
+         postRepository.increaseViewCount(postId);
+
+         // 3. 변경된 조회수 반영된 Entity 다시 조회
+         Post updatedPost = postRepository.findById(postId)
+                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
+
+         return PostResponse.from(updatedPost);
+     }
 
 
      // 게시글 수정 기능
