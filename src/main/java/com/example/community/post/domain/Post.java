@@ -23,9 +23,9 @@ public class Post extends BaseEntity {
     @Column(name = "post_id")
     private Long postId;
 
-    @Version
+
     @Column(nullable = false)
-    private Long version;
+    private Long version = 0L; // 수정한거
 
     @OneToMany(mappedBy = "post")
     private List<PostImage> images = new ArrayList<>();

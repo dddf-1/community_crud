@@ -32,6 +32,10 @@ public class SecurityConfig {
         return http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
+                .csrf(csrf -> csrf.disable())
+
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
                 // JWT 방식에서는 서버 세션을 사용하지 않는다.
                 // 그래서 CSRF 공격 대상이 되는 세션 기반 인증을 끈다.
                 .csrf(AbstractHttpConfigurer::disable)
