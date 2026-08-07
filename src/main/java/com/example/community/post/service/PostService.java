@@ -75,13 +75,12 @@ public class PostService {
         return PostResponse.from(savedPost);
     }
 
-     //게시글 목록 조회 기능
-     // @return 전체 게시글 목록을 PostResponse 리스트로 반환
+    //게시글 목록 조회 기능
+    // @return 전체 게시글 목록을 PostResponse 리스트로 반환
     public Slice<PostListResponse> getPosts(Pageable pageable) {
 
         // Page 내부의 Post 엔터티들을 postResponse dto로 변환
         return postRepository.findPostList(pageable);
-
     }
 
      @Transactional

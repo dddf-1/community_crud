@@ -23,11 +23,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             select new com.example.community.post.dto.PostListResponse(
                 p.postId,
                 m.memberId,
+                m.nickname,
                 p.title,
                 p.viewCount,
                 p.createdAt,
                 p.imageUrl                        
-            )
+            ) 
              from Post p
              join p.member m
              order by p.createdAt desc
