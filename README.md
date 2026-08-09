@@ -8,6 +8,8 @@
 
 ## 📌 프로젝트 요약
 
+https://github.com/dddf-1/community_crud.git
+
 Community는 사용자 간 게시글과 댓글을 공유하는 커뮤니티 서비스입니다.
 
 단순한 CRUD 구현을 넘어 실제 서비스 운영 환경을 고려하여 다음 경험을 목표로 진행했습니다.
