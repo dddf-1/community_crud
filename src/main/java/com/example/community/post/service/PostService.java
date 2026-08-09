@@ -11,6 +11,8 @@ import com.example.community.post.repository.PostRepository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import org.springframework.data.domain.PageRequest;
 
 // final 필드를 가진 생성자를 Lombok이 자동으로 만들어준다.
 // 그래서 postRepository, memberRepository를 직접 생성자로 주입받는 코드를 안 써도 된다.
@@ -165,5 +167,20 @@ public class PostService {
         // postRepository.deleteById(postId);
         // DB row를 날리지 않게 해서 의도치 않은 삭제를 방지.
         post.delete();
+    }
+
+    @Transactional(readOnly = true)
+    public Slice<PostListResponse> getPostsByCursor(
+            LocalDateTime lastCreatedAt,
+            Long lastPostId,
+            int size
+    ) {
+        Pageable pageable = PageRequest.of(0, size);
+
+        return postRepository.findPostListByCursor(
+                lastCreatedAt,
+                lastPostId,
+                pageable
+        );
     }
 }

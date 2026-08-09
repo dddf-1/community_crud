@@ -21,6 +21,8 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.format.annotation.DateTimeFormat;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
@@ -111,4 +113,28 @@ public class PostController {
 
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/cursor")
+    public ResponseEntity<ApiResponse<Slice<PostListResponse>>> getPostsByCursor(
+            @RequestParam LocalDateTime lastCreatedAt,
+            @RequestParam Long lastPostId,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+
+        Slice<PostListResponse> posts =
+                postService.getPostsByCursor(
+                        lastCreatedAt,
+                        lastPostId,
+                        size
+                );
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        "Cursor 기반 게시글 목록 조회 성공",
+                        posts
+                )
+        );
+    }
+
+
 }

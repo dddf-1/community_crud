@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
+import java.time.LocalDateTime;
 
 // 게시글 DB 접근을 담당하는 JPA Repository이다.
 // JpaRepository<Post, Long>를 상속하면 Spring Data JPA가 자동으로 구현체를 만들어준다.
@@ -31,7 +32,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
             ) 
              from Post p
              join p.member m
-             order by p.createdAt desc
+             order by p.createdAt desc, p.postId desc
            """)
 
     Slice<PostListResponse> findPostList(Pageable pageable);
@@ -43,5 +44,31 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     where p.postId = :postId
 """)
     void increaseViewCount(@Param("postId") Long postId);
+
+    @Query("""
+    select new com.example.community.post.dto.PostListResponse(
+        p.postId,
+        m.memberId,
+        m.nickname,
+        p.title,
+        p.viewCount,
+        p.createdAt,
+        p.imageUrl
+    )
+    from Post p
+    join p.member m
+    where
+        p.createdAt < :lastCreatedAt
+        or (
+            p.createdAt = :lastCreatedAt
+            and p.postId < :lastPostId
+        )
+    order by p.createdAt desc, p.postId desc
+""")
+    Slice<PostListResponse> findPostListByCursor(
+            @Param("lastCreatedAt") LocalDateTime lastCreatedAt,
+            @Param("lastPostId") Long lastPostId,
+            Pageable pageable
+    );
 }
 
