@@ -10,6 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 import java.util.List;
@@ -44,19 +45,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        // 요청 헤더에서 Authorization 값을 꺼낸다.
-        // JWT는 보통 Authorization: Bearer 토큰값 형태로 전달한다.
         String authorizationHeader = request.getHeader("Authorization");
 
-        // Authorization 헤더가 없거나 Bearer 형식이 아니면
-        // 인증 정보가 없는 요청으로 보고 다음 필터로 넘긴다.
-        // 이 요청이 허용되는지는 SecurityConfig의 권한 설정이 최종 판단한다.
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // "Bearer " 뒤에 있는 실제 JWT 문자열만 잘라낸다.
         String token = authorizationHeader.substring(7);
 
         // 토큰이 정상인지 검증한다.
@@ -91,5 +86,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 다음 필터 또는 Controller로 요청을 넘긴다.
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveToken(HttpServletRequest request) {
+        // Postman처럼 Authorization 헤더를 보내는 경우
+        String authorizationHeader = request.getHeader("Authorization");
+
+        if (authorizationHeader != null
+                && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+
+        // 기존 프론트처럼 credentials: 'include'를 사용하는 경우
+        Cookie[] cookies = request.getCookies();
+
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("accessToken".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+
+        return null;
     }
 }
