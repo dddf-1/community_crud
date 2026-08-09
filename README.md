@@ -1,4 +1,4 @@
-# Community
+# howareyoujake
 
 > 동시성 문제 개선과 Kubernetes 기반 클라우드 환경에서 운영 가능한 커뮤니티 서비스 구축 프로젝트입니다.
 ---
