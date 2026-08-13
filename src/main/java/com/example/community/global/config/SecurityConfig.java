@@ -17,6 +17,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import org.springframework.beans.factory.annotation.Value;
+import java.util.Arrays;
 
 
 @Configuration
@@ -27,13 +29,12 @@ public class SecurityConfig {
     // Spring Security 필터 체인에 직접 등록해서 Controller 실행 전에 먼저 동작하게 한다.
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Value("${app.cors.allowed-origins}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-
-                .csrf(csrf -> csrf.disable())
-
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
                 // JWT 방식에서는 서버 세션을 사용하지 않는다.
@@ -53,6 +54,19 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"code\":\"UNAUTHORIZED\",\"message\":\"로그인이 필요합니다.\",\"data\":null}");
+                        })
+                        .accessDeniedHandler((request, response, exception) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"code\":\"FORBIDDEN\",\"message\":\"접근 권한이 없습니다.\",\"data\":null}");
+                        })
+                )
+
                 // 어떤 API는 누구나 접근 가능하고,
                 // 어떤 API는 로그인한 사용자만 접근 가능하게 나눈다.
                 .authorizeHttpRequests(auth -> auth
@@ -61,8 +75,10 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                 // 로그인 전에도 가능한 API만 허용
                                 .requestMatchers("/health","/api/auth/signup", "/api/auth/login","/v1/auth/signup","/v1/auth/login").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/users/email/check", "/api/users/nickname/check", "/v1/users/email/check", "/v1/users/nickname/check").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/users/upload/profile-image", "/v1/users/upload/profile-image").permitAll()
                                 // 게시글 조회는 공개
-                                .requestMatchers(HttpMethod.GET, "/api/posts", "/api/posts/*").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/posts/**", "/v1/posts/**").permitAll()
                                 // 업로드된 이미지 조회 공개
                                 .requestMatchers(HttpMethod.GET, "/uploads/**").permitAll()
                                 // 나머지는 인증 필요
@@ -90,10 +106,10 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(List.of(
-                "http://54.180.147.149", // nginx 통해 접속할 때
-                "http://54.180.147.149:3000"// 프론트 서버 직접 접속할 때//
-        ));
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(origin -> !origin.isEmpty())
+                .toList());
 
         configuration.setAllowedMethods(List.of(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"

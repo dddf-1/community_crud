@@ -13,6 +13,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name = "users") // 회원 테이블명이 users
 @Getter
@@ -52,6 +54,9 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Role role;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
     // role은 이 사용자가 어떤 권한을 가졌는지 파악하기 위해 사용했음.
     // 사용자 / 관리자로 나눴고 두 개로 나눈 이유는
     // 로그인 후 어떤 기능에 접근할 수 있는지 판단하려고 만들었음.
@@ -75,5 +80,22 @@ public class Member extends BaseEntity {
     }
     public Long getId() {
         return memberId;
+    }
+
+    public void updateProfile(String nickname, String profileImageUrl) {
+        this.nickname = nickname;
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    public void withdraw() {
+        this.deletedAt = LocalDateTime.now();
+        this.email = "deleted-" + memberId + "@invalid.local";
+        this.nickname = "deleted-" + memberId;
+        this.profileImageUrl = null;
+        this.password = "WITHDRAWN";
     }
 }

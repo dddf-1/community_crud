@@ -10,6 +10,8 @@ import com.example.community.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.example.community.global.ApiException;
+import org.springframework.http.HttpStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -28,8 +30,11 @@ public class AuthService {
 
         // 같은 이메일로 가입한 회원이 있으면 회원가입을 막는다.
         // 이메일은 로그인 ID처럼 사용되기 때문에 중복되면 안 된다.
-        if (memberRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        if (memberRepository.existsByEmailAndDeletedAtIsNull(request.getEmail())) {
+            throw new ApiException(HttpStatus.CONFLICT, "ALREADY_EXIST_EMAIL", "이미 사용 중인 이메일입니다.");
+        }
+        if (memberRepository.existsByNicknameAndDeletedAtIsNull(request.getNickname())) {
+            throw new ApiException(HttpStatus.CONFLICT, "ALREADY_EXIST_NICKNAME", "이미 사용 중인 닉네임입니다.");
         }
 
         // 비밀번호는 절대 평문으로 저장하면 안 된다.
@@ -38,10 +43,12 @@ public class AuthService {
 
         // 회원가입 요청 DTO를 실제 회원 도메인 객체로 바꾼다.
         // 기본 권한은 일반 사용자 USER로 저장한다.
+        validateUploadUrl(request.getProfileImageUrl());
         Member member = new Member(
                 request.getEmail(),
                 encodedPassword,
                 request.getNickname(),
+                request.getProfileImageUrl(),
                 Role.USER
         );
 
@@ -54,13 +61,13 @@ public class AuthService {
         // 이메일로 회원을 찾는다.
         // 회원이 없으면 이메일이 틀렸는지 비밀번호가 틀렸는지 구체적으로 알려주지 않는다.
         // 보안상 둘 다 같은 메시지로 처리하는 편이 낫다.
-        Member member = memberRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 틀렸습니다."));
+        Member member = memberRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
+                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "이메일 또는 비밀번호가 틀렸습니다."));
 
         // 사용자가 입력한 비밀번호와 저장된 암호화 비밀번호가 일치하는지 확인한다.
         // BCrypt는 매번 다른 해시가 만들어질 수 있으므로 equals() 비교를 하면 안 된다.
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 틀렸습니다.");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIALS", "이메일 또는 비밀번호가 틀렸습니다.");
         }
 
         // 로그인에 성공하면 JWT를 생성한다.
@@ -72,5 +79,11 @@ public class AuthService {
 
     public void logout() {
 
+    }
+
+    private void validateUploadUrl(String url) {
+        if (url != null && !url.startsWith("/uploads/")) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "INVALID_PROFILE_IMAGE", "유효하지 않은 프로필 이미지 경로입니다.");
+        }
     }
 }

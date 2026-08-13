@@ -1,4 +1,4 @@
-package com.example.community.comment.domain;
+package com.example.community.like.domain;
 
 import com.example.community.global.BaseEntity;
 import com.example.community.member.domain.Member;
@@ -12,54 +12,35 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "comments")
+@Table(
+        name = "post_likes",
+        uniqueConstraints = @UniqueConstraint(name = "uk_post_like_post_member", columnNames = {"post_id", "user_id"})
+)
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Comment extends BaseEntity {
+public class PostLike extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "comment_id")
-    private Long commentId;
+    @Column(name = "post_like_id")
+    private Long postLikeId;
 
-    // 댓글이 달린 게시글
-    // comments 테이블의 post_id 컬럼이 posts 테이블의 post_id를 참조
     @ManyToOne(fetch = FetchType.LAZY)
-    // @ManyToOne -> 여러 개가 하나를 가진다(Comment -> Post N:1)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
 
-    // 댓글 작성자
-    // comments 테이블의 user_id 컬럼이 users 테이블의 user_id를 참조
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    // @ManyToOne -> 여러 개가 하나를 가진다(Comment -> Member N:1)
     private Member member;
 
-    @Column(nullable = false, length = 500)
-    private String content;
-
-    public Comment(Post post, Member member, String content) {
+    public PostLike(Post post, Member member) {
         this.post = post;
         this.member = member;
-        this.content = content;
-    }
-
-    public void update(String content) {
-        this.content = content;
-        // 댓글 수정 메서드
-    }
-
-    public Long getMemberId() {
-        return member.getMemberId();
-    }
-
-    public Long getPostId() {
-        return post.getPostId();
     }
 }

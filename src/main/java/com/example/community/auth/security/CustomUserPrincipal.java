@@ -2,6 +2,7 @@ package com.example.community.auth.security;
 
 import com.example.community.member.domain.Role;
 import lombok.Getter;
+import com.example.community.member.domain.Member;
 
 @Getter
 public class CustomUserPrincipal {
@@ -27,5 +28,14 @@ public class CustomUserPrincipal {
         this.email = email;
         this.nickname = nickname;
         this.role = role;
+    }
+
+    public static CustomUserPrincipal from(Member member) {
+        return new CustomUserPrincipal(
+                member.getMemberId(),
+                member.getEmail(),
+                member.getNickname(),
+                member.getRole()
+        );
     }
 }
