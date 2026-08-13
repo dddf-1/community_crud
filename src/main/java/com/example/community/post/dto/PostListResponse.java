@@ -1,6 +1,6 @@
 package com.example.community.post.dto;
 
-import com.example.community.post.domain.Post;
+import com.example.community.member.dto.AuthorResponse;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -9,40 +9,33 @@ import java.time.LocalDateTime;
 public class PostListResponse {
 
     private final Long id;
-    private final Long MemberId;
-    private final String nickname;
+    private final AuthorResponse author;
     private final String title;
     private final int viewCount;
     private final LocalDateTime createdAt;
     private final String attachFileUrl;
+    private final long commentCount;
+    private final long likeCount;
 
     public PostListResponse(
             Long id,
             Long memberId,
             String nickname,
+            String profileImageUrl,
             String title,
             int viewCount,
             LocalDateTime createdAt,
-            String attachFileUrl
+            String attachFileUrl,
+            long commentCount,
+            long likeCount
     ) {
         this.id = id;
-        this.MemberId = memberId;
-        this.nickname = nickname;
+        this.author = new AuthorResponse(memberId, nickname, profileImageUrl);
         this.title = title;
         this.viewCount = viewCount;
         this.createdAt = createdAt;
         this.attachFileUrl = attachFileUrl;
+        this.commentCount = commentCount;
+        this.likeCount = likeCount;
     }
-    public static PostListResponse from(Post post) {
-        return new PostListResponse(
-                post.getPostId(),
-                post.getMember().getMemberId(),
-                post.getMember().getNickname(),
-                post.getTitle(),
-                post.getViewCount(),
-                post.getCreatedAt(),
-                post.getImageUrl()
-        );
-    }
-
 }

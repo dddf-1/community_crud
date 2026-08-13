@@ -10,7 +10,9 @@ import com.example.community.post.service.PostService;
 import com.example.community.post.dto.PostListResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Slice;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.format.annotation.DateTimeFormat;
 import java.time.LocalDateTime;
+import jakarta.validation.Valid;
 
 @RestController
 @RequiredArgsConstructor
@@ -36,7 +39,7 @@ public class PostController {
     public ResponseEntity<ApiResponse<Map<String, String>>> uploadAttachFile(
             @RequestParam("postFile") MultipartFile postFile
     ) {
-        String fileUrl = fileStorageService.save(postFile);
+        String fileUrl = fileStorageService.saveImage(postFile);
 
         return ResponseEntity.ok(
                 ApiResponse.success("게시글 이미지 업로드 성공", Map.of("fileUrl", fileUrl))
@@ -45,7 +48,7 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<ApiResponse<PostResponse>> createPost(
-            @RequestBody PostCreateRequest request,
+            @Valid @RequestBody PostCreateRequest request,
 
             // JwtAuthenticationFilter가 SecurityContextHolder에 저장한 로그인 사용자 정보가 여기로 들어온다.
             // 기존 세션 방식의 HttpSession 대신 사용하는 부분이다.
@@ -64,19 +67,26 @@ public class PostController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<Slice<PostListResponse>>> getPosts(Pageable pageable) {
+    public ResponseEntity<ApiResponse<Slice<PostListResponse>>> getPosts(
+            @PageableDefault(size = 5) Pageable pageable
+    ) {
 
-        
-        Slice<PostListResponse> response = postService.getPosts(pageable);
+        Slice<PostListResponse> response = postService.getPosts(safePageable(pageable));
 
         return ResponseEntity.ok(ApiResponse.success("게시글 목록 조회 성공", response));
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<ApiResponse<PostResponse>> getPost(@PathVariable Long postId) {
+    public ResponseEntity<ApiResponse<PostResponse>> getPost(
+            @PathVariable Long postId,
+            @AuthenticationPrincipal CustomUserPrincipal loginMember
+    ) {
 
         // 게시글 단건 조회도 로그인하지 않아도 가능하다.
-        PostResponse response = postService.getPost(postId);
+        PostResponse response = postService.getPost(
+                postId,
+                loginMember == null ? null : loginMember.getMemberId()
+        );
 
         return ResponseEntity.ok(ApiResponse.success("게시글 조회 성공", response));
     }
@@ -84,7 +94,7 @@ public class PostController {
     @PatchMapping("/{postId}")
     public ResponseEntity<ApiResponse<PostResponse>> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostUpdateRequest request,
+            @Valid @RequestBody PostUpdateRequest request,
 
             // JWT 인증에 성공한 사용자 정보
             // 이 memberId와 게시글 작성자 memberId를 Service에서 비교한다.
@@ -133,6 +143,27 @@ public class PostController {
                         "Cursor 기반 게시글 목록 조회 성공",
                         posts
                 )
+        );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<Slice<PostListResponse>>> searchPosts(
+            @RequestParam String keyword,
+            @RequestParam(defaultValue = "recent") String sort,
+            @PageableDefault(size = 5) Pageable pageable
+    ) {
+        Slice<PostListResponse> response = postService.searchPosts(
+                keyword,
+                sort,
+                safePageable(pageable)
+        );
+        return ResponseEntity.ok(ApiResponse.success("게시글 검색 성공", response));
+    }
+
+    private Pageable safePageable(Pageable pageable) {
+        return PageRequest.of(
+                Math.max(0, pageable.getPageNumber()),
+                Math.max(1, Math.min(pageable.getPageSize(), 50))
         );
     }
 

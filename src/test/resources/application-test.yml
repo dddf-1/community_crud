@@ -8,3 +8,16 @@ spring:
   jpa:
     hibernate:
       ddl-auto: create-drop
+
+jwt:
+  secret: test-only-jwt-secret-with-at-least-32-bytes
+  expiration: 3600000
+
+app:
+  auth:
+    cookie-secure: false
+    cookie-same-site: Strict
+  cors:
+    allowed-origins: http://localhost:8082
+  upload:
+    dir: ${java.io.tmpdir}/community-crud-test-uploads

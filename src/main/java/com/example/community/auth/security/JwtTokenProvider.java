@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.security.MessageDigest;
 
 @Component
 public class JwtTokenProvider {
@@ -46,6 +47,9 @@ public class JwtTokenProvider {
         // Bean 생성 후 secret 값을 byte[]로 변환해둔다.
         // 매번 토큰을 만들 때마다 변환하지 않으려고 미리 준비하는 것이다.
         this.secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET은 32바이트 이상이어야 합니다.");
+        }
     }
 
     public String createToken(Member member) {
@@ -108,7 +112,10 @@ public class JwtTokenProvider {
 
             // 토큰에 들어있는 서명과 서버가 다시 만든 서명이 다르면
             // 토큰이 위조되었거나 secret key가 다른 것이다.
-            if (!expectedSignature.equals(parts[2])) {
+            if (!MessageDigest.isEqual(
+                    expectedSignature.getBytes(StandardCharsets.US_ASCII),
+                    parts[2].getBytes(StandardCharsets.US_ASCII)
+            )) {
                 return false;
             }
 
@@ -134,6 +141,14 @@ public class JwtTokenProvider {
 
         // Spring Security에서 사용할 로그인 사용자 객체로 변환한다.
         return new CustomUserPrincipal(memberId, email, nickname, role);
+    }
+
+    public Long getMemberId(String token) {
+        return Long.valueOf(getPayload(token).get("memberId").toString());
+    }
+
+    public long getExpirationMillis() {
+        return expirationMillis;
     }
 
     private Map<String, Object> getPayload(String token) {

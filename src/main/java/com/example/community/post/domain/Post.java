@@ -2,6 +2,8 @@ package com.example.community.post.domain;
 
 import com.example.community.global.BaseEntity;
 import com.example.community.member.domain.Member;
+import com.example.community.comment.domain.Comment;
+import com.example.community.like.domain.PostLike;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -24,11 +26,18 @@ public class Post extends BaseEntity {
     private Long postId;
 
 
+    @Version
     @Column(nullable = false)
     private Long version = 0L; // 수정한거
 
     @OneToMany(mappedBy = "post")
     private List<PostImage> images = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "post")
+    private List<PostLike> likes = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     // 다대일 관계를 설정하고, 연관 데이터를 가져오게 함.

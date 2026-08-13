@@ -14,12 +14,14 @@ import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 import java.util.List;
+import com.example.community.member.repository.MemberRepository;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final MemberRepository memberRepository;
 
     @Override
     protected void doFilterInternal(
@@ -45,14 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        String authorizationHeader = request.getHeader("Authorization");
+        String token = resolveToken(request);
 
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = authorizationHeader.substring(7);
 
         // 토큰이 정상인지 검증한다.
         // 서명이 틀렸거나 만료되었으면 인증 객체를 만들지 않는다.
@@ -62,7 +62,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 토큰에서 로그인 사용자 정보를 꺼낸다.
-        CustomUserPrincipal principal = jwtTokenProvider.getPrincipal(token);
+        CustomUserPrincipal principal = memberRepository
+                .findByMemberIdAndDeletedAtIsNull(jwtTokenProvider.getMemberId(token))
+                .map(CustomUserPrincipal::from)
+                .orElse(null);
+        if (principal == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         // Spring Security 권한 형식은 보통 ROLE_USER, ROLE_ADMIN 형태를 사용한다.
         List<SimpleGrantedAuthority> authorities = List.of(
