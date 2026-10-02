@@ -81,15 +81,6 @@
 
 ![서비스 아키텍처](docs/Architecture.png)
 
-```text
-Client
-  → Domain (HTTPS)
-  → AWS Load Balancer
-  → Kubernetes Ingress
-  → Kubernetes Service
-  → Spring Boot Pod
-  → MySQL
-```
 
 애플리케이션 Pod는 복제본으로 운영하고, 모니터링 지표는 Prometheus와 Grafana에서 확인하며 로그는 Loki로 수집하도록 구성했습니다.
 
